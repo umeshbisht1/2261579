@@ -1,0 +1,112 @@
+import express from 'express';
+import { createShortUrl, getUrlStats } from '../services/urlService.js';
+import { logger } from '../middleware/logger.js';
+
+const router = express.Router();
+
+
+const validateCreateUrl = (req, res, next) => {
+    const { url, validity, shortcode } = req.body;
+    
+    if (!url) {
+        logger.warn('URL validation failed - missing URL', { body: req.body });
+        return res.status(400).json({ error: 'URL is required' });
+    }
+    
+   
+    try {
+        new URL(url);
+    } catch (error) {
+        logger.warn('URL validation failed - invalid URL format', { url, error: error.message });
+        return res.status(400).json({ error: 'Invalid URL format' });
+    }
+    
+
+    if (validity !== undefined) {
+        if (!Number.isInteger(validity) || validity <= 0) {
+            logger.warn('Validity validation failed', { validity });
+            return res.status(400).json({ error: 'Validity must be a positive integer (minutes)' });
+        }
+    }
+    
+   
+    if (shortcode !== undefined) {
+        if (typeof shortcode !== 'string' || shortcode.length === 0) {
+            logger.warn('Shortcode validation failed - empty or invalid', { shortcode });
+            return res.status(400).json({ error: 'Shortcode must be a non-empty string' });
+        }
+        
+       
+        if (!/^[a-zA-Z0-9]+$/.test(shortcode)) {
+            logger.warn('Shortcode validation failed - invalid characters', { shortcode });
+            return res.status(400).json({ error: 'Shortcode must contain only alphanumeric characters' });
+        }
+        
+        
+        if (shortcode.length > 50) {
+            logger.warn('Shortcode validation failed - too long', { shortcode });
+            return res.status(400).json({ error: 'Shortcode must be 50 characters or less' });
+        }
+    }
+    
+    next();
+};
+
+
+router.post('/', validateCreateUrl, async (req, res) => {
+    try {
+        const { url, validity = 30, shortcode } = req.body;
+        
+        logger.info('Creating short URL', { url, validity, shortcode });
+        
+        const result = await createShortUrl(url, validity, shortcode);
+        
+        logger.info('Short URL created successfully', { 
+            shortLink: result.shortLink, 
+            expiry: result.expiry,
+            shortcode: result.shortcode 
+        });
+        
+        res.status(201).json(result);
+    } catch (error) {
+        logger.error('Error creating short URL', { error: error.message, stack: error.stack });
+        
+        if (error.message.includes('already exists')) {
+            return res.status(409).json({ error: 'Shortcode already exists' });
+        }
+        
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+router.get('/:shortcode', async (req, res) => {
+    try {
+        const { shortcode } = req.params;
+        
+        logger.info('Retrieving URL statistics', { shortcode });
+        
+        const stats = await getUrlStats(shortcode);
+        
+        if (!stats) {
+            logger.warn('URL statistics not found', { shortcode });
+            return res.status(404).json({ error: 'Short URL not found' });
+        }
+        
+        logger.info('URL statistics retrieved successfully', { 
+            shortcode, 
+            clickCount: stats.clickCount 
+        });
+        
+        res.json(stats);
+    } catch (error) {
+        logger.error('Error retrieving URL statistics', { 
+            shortcode: req.params.shortcode, 
+            error: error.message 
+        });
+        
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+export default router;
