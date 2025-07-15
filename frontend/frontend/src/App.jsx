@@ -98,7 +98,7 @@ const App = () => {
           <p className="text-gray-600">Transform long URLs into short, manageable links</p>
         </div>
 
-        {/* Main Card */}
+      
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <form onSubmit={createShortUrl} className="space-y-4">
             <div>
@@ -166,7 +166,7 @@ const App = () => {
             </div>
           )}
 
-          {/* Error Message */}
+         
           {error && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center">
@@ -176,7 +176,7 @@ const App = () => {
             </div>
           )}
 
-          {/* Short URL Result */}
+       
           {shortLink && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <label className="block text-sm font-medium text-blue-800 mb-2">
@@ -206,7 +206,7 @@ const App = () => {
           )}
         </div>
 
-        {/* Statistics Section */}
+     
         {showStats && stats && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
@@ -252,7 +252,7 @@ const App = () => {
               </div>
             </div>
 
-            {/* Click History */}
+          
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Click History</h3>
               {stats.clicks.length === 0 ? (
@@ -300,7 +300,7 @@ const App = () => {
           </div>
         )}
 
-        {/* Quick Stats Lookup */}
+    
         <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Stats Lookup</h2>
           <div className="flex space-x-2">

@@ -46,7 +46,7 @@ app.get('/:shortcode', async (req, res) => {
     
         await recordClick(shortcode, req.headers.referer || 'direct', req.ip);
         
-        // Redirect to original URL
+      
         res.redirect(urlData.original_url);
     } catch (error) {
         console.error('Redirect error:', error);
